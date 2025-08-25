@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curriculum Vitae App</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* Custom CSS for animations and hover effects */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .photo-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #e5e7eb;
+            cursor: pointer;
+        }
+        /* Ensure modals are centered using flex when active */
+        .fixed.inset-0.flex {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <!-- Navigation -->
+    <nav class="bg-blue-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold">CV Reza Ramdani Putra</h1>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showMainPage()" class="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition">
+                        <i class="fas fa-eye mr-2"></i>Lihat CV
+                    </button>
+                    <button onclick="showEditPage()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-400 transition">
+                        <i class="fas fa-edit mr-2"></i>Edit CV
+                    </button>
+                    <!-- Tombol Export PDF di sini sudah dihapus sesuai permintaan sebelumnya -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main CV Page (View Mode) -->
+    <div id="mainPage" class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8 fade-in">
+            <!-- Profile Section -->
+            <div class="text-center mb-8">
+                <div class="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-4 border-blue-100">
+                    <img id="profilePhoto" src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/2a43809b-80fc-4a69-92ca-0b962cdcd561.png" alt="Foto profil profesional dengan latar belakang netral dan pakaian formal" class="w-full h-full object-cover" onerror="this.src='https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/68f53d1d-befb-498d-ad41-9ef7d82197ea.png'">
+                </div>
+                <h1 id="profileName" class="text-3xl font-bold text-gray-800 mb-2">Nama Lengkap</h1>
+                <p id="profileTitle" class="text-xl text-blue-600 mb-4">Profesi</p>
+                <p id="profileSummary" class="text-gray-600 max-w-2xl mx-auto">Ringkasan profesional yang menjelaskan latar belakang dan keahlian utama.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Contact Information -->
+                <div>
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b-2 border-blue-100 pb-2">
+                        <i class="fas fa-address-card mr-2 text-blue-500"></i>Kontak
+                    </h2>
+                    <div id="contactInfo" class="space-y-2">
+                        <!-- Contact details will be rendered here by JavaScript -->
+                        <div class="flex items-center">
+                            <i class="fas fa-envelope text-blue-500 w-6"></i>
+                            <span>email@example.com</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-phone text-blue-500 w-6"></i>
+                            <span>+62 812-3456-7890</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-map-marker-alt text-blue-500 w-6"></i>
+                            <span>Alamat lengkap</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills -->
+                <div>
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b-2 border-blue-100 pb-2">
+                        <i class="fas fa-tools mr-2 text-blue-500"></i>Keahlian
+                    </h2>
+                    <div id="skillsList" class="flex flex-wrap gap-2">
+                        <!-- Skills will be rendered here by JavaScript -->
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Contoh Keahlian</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Experience Section -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8 fade-in">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b-2 border-blue-100 pb-2">
+                <i class="fas fa-briefcase mr-2 text-blue-500"></i>Pengalaman Kerja
+            </h2>
+            <div id="experienceList" class="space-y-6">
+                <!-- Experience items will be loaded here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Education Section -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8 fade-in">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b-2 border-blue-100 pb-2">
+                <i class="fas fa-graduation-cap mr-2 text-blue-500"></i>Pendidikan
+            </h2>
+            <div id="educationList" class="space-y-6">
+                <!-- Education items will be loaded here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Page -->
+    <div id="editPage" class="container mx-auto px-4 py-8 hidden">
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">
+                    <i class="fas fa-user-edit mr-2 text-blue-500"></i>Edit Profil
+                </h2>
+                <div class="flex items-center space-x-3"> <!-- Container untuk tombol-tombol aksi -->
+                    <button onclick="importData()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                        <i class="fas fa-upload mr-2"></i>Import Data
+                        <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="handleImportFile(event)">
+                    </button>
+                    <button onclick="backupData()" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition">
+                        <i class="fas fa-download mr-2"></i>Backup Data
+                    </button>
+                    <button onclick="exportToPDF()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-file-pdf mr-2"></i>Export PDF
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <!-- Photo Upload Section -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Foto Profil</label>
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <img id="photoPreview" src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/2a43809b-80fc-4a69-92ca-0b962cdcd561.png" alt="Preview foto profil" class="photo-preview" onclick="document.getElementById('photoUpload').click()">
+                            <input type="file" id="photoUpload" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+                            <div class="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full cursor-pointer" onclick="document.getElementById('photoUpload').click()">
+                                <i class="fas fa-camera text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm text-gray-600 mb-2">Klik foto untuk mengupload gambar dari komputer Anda</p>
+                            <p class="text-xs text-gray-500">Format: JPG, PNG, GIF (Max: 2MB)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
+                    <input type="text" id="editName" placeholder="Nama Lengkap" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Profesi</label>
+                    <input type="text" id="editTitle" placeholder="Posisi/Profesi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ringkasan Profil</label>
+                    <textarea id="editSummary" placeholder="Deskripsi singkat tentang diri Anda" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <button onclick="resetPhoto()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                    <i class="fas fa-undo mr-2"></i>Reset Foto
+                </button>
+                <button onclick="saveProfile()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-save mr-2"></i>Simpan Profil
+                </button>
+            </div>
+        </div>
+
+        <!-- Experience Management -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">
+                    <i class="fas fa-briefcase mr-2 text-blue-500"></i>Pengalaman Kerja
+                </h2>
+                <button onclick="showExperienceModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-plus mr-2"></i>Tambah
+                </button>
+            </div>
+            <div id="experienceEditList" class="space-y-4">
+                <!-- Experience edit items will be loaded here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Education Management -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">
+                    <i class="fas fa-graduation-cap mr-2 text-blue-500"></i>Pendidikan
+                </h2>
+                <button onclick="showEducationModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-plus mr-2"></i>Tambah
+                </button>
+            </div>
+            <div id="educationEditList" class="space-y-4">
+                <!-- Education edit items will be loaded here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Skills Management -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                <i class="fas fa-tools mr-2 text-blue-500"></i>Keahlian
+            </h2>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tambah Keahlian (pisahkan dengan koma)</label>
+                <input type="text" id="newSkills" placeholder="JavaScript, React, Python, ..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+            <div class="flex justify-end">
+                <button onclick="saveSkills()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-save mr-2"></i>Simpan Keahlian
+                </button>
+            </div>
+        </div>
+
+        <!-- Contact Management -->
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                <i class="fas fa-address-card mr-2 text-blue-500"></i>Kontak
+            </h2>
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="editEmail" placeholder="email@example.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Telepon</label>
+                    <input type="tel" id="editPhone" placeholder="+62 812-3456-7890" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Alamat</label>
+                    <textarea id="editAddress" placeholder="Alamat lengkap" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button onclick="saveContact()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-save mr-2"></i>Simpan Kontak
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Experience Modal -->
+    <div id="experienceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 m-4 max-w-md w-full">
+            <h3 class="text-xl font-semibold mb-4">Tambah/Edit Pengalaman</h3>
+            <div class="space-y-4">
+                <input type="hidden" id="expId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Posisi</label>
+                    <input type="text" id="expPosition" class="w-full px-3 py-2 border border-gray-300 rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Perusahaan</label>
+                    <input type="text" id="expCompany" class="w-full px-3 py-2 border border-gray-300 rounded">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mulai</label>
+                        <input type="month" id="expStart" class="w-full px-3 py-2 border border-gray-300 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Selesai</label>
+                        <input type="month" id="expEnd" class="w-full px-3 py-2 border border-gray-300 rounded">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+                    <textarea id="expDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="hideExperienceModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">Batal</button>
+                <button onclick="saveExperience()" class="px-4 py-2 bg-blue-600 text-white rounded">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Education Modal -->
+    <div id="educationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 m-4 max-w-md w-full">
+            <h3 class="text-xl font-semibold mb-4">Tambah/Edit Pendidikan</h3>
+            <div class="space-y-4">
+                <input type="hidden" id="eduId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Institusi</label>
+                    <input type="text" id="eduInstitution" class="w-full px-3 py-2 border border-gray-300 rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Jurusan</label>
+                    <input type="text" id="eduDegree" class="w-full px-3 py-2 border border-gray-300 rounded">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mulai</label>
+                        <input type="month" id="eduStart" class="w-full px-3 py-2 border border-gray-300 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Selesai</label>
+                        <input type="month" id="eduEnd" class="w-full px-3 py-2 border border-gray-300 rounded">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+                    <textarea id="eduDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="hideEducationModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">Batal</button>
+                <button onclick="saveEducation()" class="px-4 py-2 bg-blue-600 text-white rounded">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+
+        // Data storage
+        let cvData = {
+            profile: {
+                photo: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/2a43809b-80fc-4a69-92ca-0b962cdcd561.png",
+                name: "Nama Lengkap",
+                title: "Profesi",
+                summary: "Ringkasan profesional yang menjelaskan latar belakang dan keahlian utama."
+            },
+            contact: {
+                email: "email@example.com",
+                phone: "+62 812-3456-7890",
+                address: "Alamat lengkap"
+            },
+            experiences: [],
+            education: [],
+            skills: ["Contoh Keahlian"]
+        };
+
+        // Load data from localStorage
+        function loadData() {
+            const savedData = localStorage.getItem('cvData');
+            if (savedData) {
+                try {
+                    // Parse the saved data. If it's corrupted, use default.
+                    cvData = JSON.parse(savedData);
+                } catch (e) {
+                    console.error("Error parsing saved CV data from localStorage:", e);
+                    // Optionally, clear corrupted data or notify user
+                    // localStorage.removeItem('cvData');
+                    // alert('Data CV Anda mungkin rusak. Menggunakan data default.');
+                }
+            }
+            // Ensure photo is always a string, not null or undefined
+            if (!cvData.profile.photo) {
+                cvData.profile.photo = "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/2a43809b-80fc-4a69-92ca-0b962cdcd561.png";
+            }
+            renderCV(); // Render CV view
+            renderEditForms(); // Render edit forms
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('cvData', JSON.stringify(cvData));
+            renderCV(); // Re-render CV view after saving
+            renderEditForms(); // Re-render edit forms after saving
+        }
+
+        // Navigation functions
+        function showMainPage() {
+            document.getElementById('mainPage').classList.remove('hidden');
+            document.getElementById('editPage').classList.add('hidden');
+            // Ensure the main page content is visible and updated
+            renderCV();
+        }
+
+        function showEditPage() {
+            document.getElementById('mainPage').classList.add('hidden');
+            document.getElementById('editPage').classList.remove('hidden');
+            // Ensure the edit page forms are populated with current data
+            renderEditForms();
+        }
+
+        // Photo Upload Functions
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Check file size (max 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Ukuran file terlalu besar! Maksimal 2MB.');
+                    return;
+                }
+
+                // Check file type
+                if (!file.type.match('image.*')) {
+                    alert('Hanya file gambar yang diperbolehkan!');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const photoDataUrl = e.target.result;
+                    document.getElementById('photoPreview').src = photoDataUrl;
+                    cvData.profile.photo = photoDataUrl;
+                    saveData(); // Save and re-render
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function resetPhoto() {
+            const defaultPhoto = "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/2a43809b-80fc-4a69-92ca-0b962cdcd561.png";
+            document.getElementById('photoPreview').src = defaultPhoto;
+            cvData.profile.photo = defaultPhoto;
+            saveData(); // Save and re-render
+        }
+
+        // PDF Export Function
+        function exportToPDF() {
+            // Show loading indicator
+            const exportBtn = document.querySelector('button[onclick="exportToPDF()"]');
+            const originalText = exportBtn.innerHTML;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Membuat PDF...';
+            exportBtn.disabled = true;
+
+            // Temporarily show mainPage if it's hidden, and move it off-screen
+            const mainPage = document.getElementById('mainPage');
+            const editPage = document.getElementById('editPage');
+
+            // Store original display states
+            const originalMainPageDisplay = mainPage.style.display;
+            const originalEditPageDisplay = editPage.style.display;
+            const originalMainPagePosition = mainPage.style.position;
+            const originalMainPageLeft = mainPage.style.left;
+
+            // Make mainPage visible and move it off-screen for capture
+            mainPage.style.display = 'block'; // Ensure it's not 'none'
+            mainPage.style.position = 'absolute';
+            mainPage.style.left = '-9999px';
+            editPage.style.display = 'none'; // Ensure editPage is hidden
+
+            // Re-render CV content to ensure it's up-to-date before capture
+            renderCV();
+
+            // Use a small timeout to ensure DOM updates are applied before html2canvas runs
+            setTimeout(() => {
+                html2canvas(mainPage, { // Capture the mainPage element directly
+                    scale: 2, // Higher scale for better resolution
+                    useCORS: true, // Enable CORS for images
+                    logging: false, // Disable logging for cleaner console
+                    allowTaint: true, // Allow images from other origins to "taint" the canvas (might be needed for CORS)
+                    // foreignObjectRendering: true // Can help with complex CSS, but might introduce other issues
+                }).then(canvas => {
+                    // Restore original display states
+                    mainPage.style.display = originalMainPageDisplay;
+                    mainPage.style.position = originalMainPagePosition;
+                    mainPage.style.left = originalMainPageLeft;
+                    editPage.style.display = originalEditPageDisplay;
+
+                    const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = canvas.width;
+                    const imgHeight = canvas.height;
+                    
+                    // Calculate aspect ratio to fit image within PDF page
+                    // We want to fit the image to the width of the PDF page,
+                    // and then calculate the height based on the aspect ratio.
+                    const ratio = pdfWidth / imgWidth;
+                    const finalImgWidth = pdfWidth;
+                    const finalImgHeight = imgHeight * ratio;
+                    
+                    let position = 0;
+                    let heightLeft = finalImgHeight;
+
+                    // If the content is taller than one page, split it into multiple pages
+                    while (heightLeft >= 0) {
+                        position = heightLeft - finalImgHeight;
+                        pdf.addImage(imgData, 'JPEG', 0, position, finalImgWidth, finalImgHeight);
+                        heightLeft -= pdfHeight; // Move to the next page
+                        if (heightLeft > 0) {
+                            pdf.addPage();
+                        }
+                    }
+                    
+                    // Generate filename with current date
+                    const date = new Date();
+                    const filename = `CV_${cvData.profile.name.replace(/\s+/g, '_')}_${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}.pdf`;
+                    
+                    pdf.save(filename);
+
+                    // Restore button state
+                    exportBtn.innerHTML = originalText;
+                    exportBtn.disabled = false;
+                }).catch(error => {
+                    console.error('Error generating PDF:', error);
+                    alert('Terjadi error saat membuat PDF. Silakan coba lagi. Pastikan semua gambar dimuat dengan benar.');
+                    
+                    // Restore button state even on error
+                    mainPage.style.display = originalMainPageDisplay;
+                    mainPage.style.position = originalMainPagePosition;
+                    mainPage.style.left = originalMainPageLeft;
+                    editPage.style.display = originalEditPageDisplay;
+                    exportBtn.innerHTML = originalText;
+                    exportBtn.disabled = false;
+                });
+            }, 100); // Small delay to ensure DOM is ready for capture
+        }
+
+        // Helper function to format date for display
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            // Use toLocaleString for better internationalization or custom format
+            return date.toLocaleDateDateString('id-ID', { year: 'numeric', month: 'long' });
+        }
+
+        // Import Data Function
+        function importData() {
+            document.getElementById('importFileInput').click();
+        }
+
+        function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        // Basic validation to ensure it's a CV data structure
+                        if (importedData.profile && importedData.contact && importedData.experiences && importedData.education && importedData.skills) {
+                            cvData = importedData;
+                            saveData(); // Save imported data to localStorage and re-render
+                            alert('Data CV berhasil diimpor!');
+                        } else {
+                            alert('Format file JSON tidak valid untuk data CV.');
+                        }
+                    } catch (error) {
+                        console.error('Error parsing imported JSON:', error);
+                        alert('Gagal mengimpor data. Pastikan file adalah JSON yang valid.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Backup Data Function
+        function backupData() {
+            const dataStr = JSON.stringify(cvData, null, 2); // null, 2 for pretty printing
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const date = new Date();
+            const filename = `CV_Backup_${cvData.profile.name.replace(/\s+/g, '_')}_${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}.json`;
+            a.download = filename;
+            document.body.appendChild(a); // Required for Firefox
+            a.click();
+            document.body.removeChild(a); // Clean up
+            URL.revokeObjectURL(url); // Release the object URL
+            alert('Data CV berhasil dibackup!');
+        }
+
+
+        // Render CV
+        function renderCV() {
+            // Profile
+            document.getElementById('profilePhoto').src = cvData.profile.photo;
+            document.getElementById('profileName').textContent = cvData.profile.name;
+            document.getElementById('profileTitle').textContent = cvData.profile.title;
+            document.getElementById('profileSummary').textContent = cvData.profile.summary;
+
+            // Contact
+            const contactInfo = document.getElementById('contactInfo');
+            contactInfo.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-envelope text-blue-500 w-6"></i>
+                    <span>${cvData.contact.email || 'email@example.com'}</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-phone text-blue-500 w-6"></i>
+                    <span>${cvData.contact.phone || '+62 812-3456-7890'}</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-map-marker-alt text-blue-500 w-6"></i>
+                    <span>${cvData.contact.address || 'Alamat lengkap'}</span>
+                </div>
+            `;
+
+            // Skills
+            const skillsList = document.getElementById('skillsList');
+            skillsList.innerHTML = cvData.skills.map(skill => 
+                `<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">${skill}</span>`
+            ).join('') || '<p class="text-gray-500 text-center">Belum ada keahlian</p>'; // Added default message
+
+            // Experiences
+            const experienceList = document.getElementById('experienceList');
+            experienceList.innerHTML = cvData.experiences.map(exp => `
+                <div class="card-hover bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-semibold text-gray-800">${exp.position || 'Posisi'}</h3>
+                        <span class="text-sm text-gray-500">${formatDate(exp.start)} - ${exp.end ? formatDate(exp.end) : 'Sekarang'}</span>
+                    </div>
+                    <p class="text-blue-600 font-medium mb-2">${exp.company || 'Perusahaan'}</p>
+                    <p class="text-gray-600">${exp.description || 'Deskripsi pengalaman kerja.'}</p>
+                </div>
+            `).join('') || '<p class="text-gray-500 text-center">Belum ada pengalaman kerja</p>';
+
+            // Education
+            const educationList = document.getElementById('educationList');
+            educationList.innerHTML = cvData.education.map(edu => `
+                <div class="card-hover bg-gray-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-semibold text-gray-800">${edu.degree || 'Jurusan'}</h3>
+                        <span class="text-sm text-gray-500">${formatDate(edu.start)} - ${edu.end ? formatDate(edu.end) : 'Sekarang'}</span>
+                    </div>
+                    <p class="text-green-600 font-medium mb-2">${edu.institution || 'Institusi Pendidikan'}</p>
+                    <p class="text-gray-600">${edu.description || 'Deskripsi pendidikan.'}</p>
+                </div>
+            `).join('') || '<p class="text-gray-500 text-center">Belum ada data pendidikan</p>';
+        }
+
+        // Render edit forms
+        function renderEditForms() {
+            // Profile form
+            document.getElementById('photoPreview').src = cvData.profile.photo;
+            document.getElementById('editName').value = cvData.profile.name;
+            document.getElementById('editTitle').value = cvData.profile.title;
+            document.getElementById('editSummary').value = cvData.profile.summary;
+
+            // Contact form
+            document.getElementById('editEmail').value = cvData.contact.email;
+            document.getElementById('editPhone').value = cvData.contact.phone;
+            document.getElementById('editAddress').value = cvData.contact.address;
+
+            // Skills form
+            document.getElementById('newSkills').value = cvData.skills.join(', ');
+
+            // Experiences edit list
+            const experienceEditList = document.getElementById('experienceEditList');
+            experienceEditList.innerHTML = cvData.experiences.map((exp, index) => `
+                <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold">${exp.position || 'Posisi'} - ${exp.company || 'Perusahaan'}</h4>
+                        <p class="text-sm text-gray-600">${formatDate(exp.start)} - ${exp.end ? formatDate(exp.end) : 'Sekarang'}</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="editExperience(${index})" class="px-3 py-1 bg-yellow-500 text-white rounded text-sm">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteExperience(${index})" class="px-3 py-1 bg-red-500 text-white rounded text-sm">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-gray-500 text-center">Belum ada pengalaman kerja</p>';
+
+            // Education edit list
+            const educationEditList = document.getElementById('educationEditList');
+            educationEditList.innerHTML = cvData.education.map((edu, index) => `
+                <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold">${edu.degree || 'Jurusan'} - ${edu.institution || 'Institusi'}</h4>
+                        <p class="text-sm text-gray-600">${formatDate(edu.start)} - ${edu.end ? formatDate(edu.end) : 'Sekarang'}</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="editEducation(${index})" class="px-3 py-1 bg-yellow-500 text-white rounded text-sm">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteEducation(${index})" class="px-3 py-1 bg-red-500 text-white rounded text-sm">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-gray-500 text-center">Belum ada data pendidikan</p>';
+        }
+
+        // Save functions
+        function saveProfile() {
+            cvData.profile = {
+                photo: cvData.profile.photo, // Keep current photo
+                name: document.getElementById('editName').value || "Nama Lengkap",
+                title: document.getElementById('editTitle').value || "Profesi",
+                summary: document.getElementById('editSummary').value || "Ringkasan profesional yang menjelaskan latar belakang dan keahlian utama."
+            };
+            saveData();
+            alert('Profil berhasil disimpan!');
+        }
+
+        function saveContact() {
+            cvData.contact = {
+                email: document.getElementById('editEmail').value || "email@example.com",
+                phone: document.getElementById('editPhone').value || "+62 812-3456-7890",
+                address: document.getElementById('editAddress').value || "Alamat lengkap"
+            };
+            saveData();
+            alert('Kontak berhasil disimpan!');
+        }
+
+        function saveSkills() {
+            const skillsText = document.getElementById('newSkills').value;
+            cvData.skills = skillsText.split(',').map(skill => skill.trim()).filter(skill => skill);
+            saveData();
+            alert('Keahlian berhasil disimpan!');
+        }
+
+        // Experience functions
+        function showExperienceModal(editIndex = null) {
+            const modal = document.getElementById('experienceModal');
+            if (editIndex !== null && cvData.experiences[editIndex]) { // Check if index is valid
+                const exp = cvData.experiences[editIndex];
+                document.getElementById('expId').value = editIndex;
+                document.getElementById('expPosition').value = exp.position;
+                document.getElementById('expCompany').value = exp.company;
+                document.getElementById('expStart').value = exp.start;
+                document.getElementById('expEnd').value = exp.end || '';
+                document.getElementById('expDescription').value = exp.description;
+            } else {
+                // Reset form for new entry
+                document.getElementById('expId').value = '';
+                document.getElementById('expPosition').value = '';
+                document.getElementById('expCompany').value = '';
+                document.getElementById('expStart').value = '';
+                document.getElementById('expEnd').value = '';
+                document.getElementById('expDescription').value = '';
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex'); // Use flex to center it
+        }
+
+        function hideExperienceModal() {
+            const modal = document.getElementById('experienceModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveExperience() {
+            const id = document.getElementById('expId').value;
+            const experience = {
+                position: document.getElementById('expPosition').value,
+                company: document.getElementById('expCompany').value,
+                start: document.getElementById('expStart').value,
+                end: document.getElementById('expEnd').value,
+                description: document.getElementById('expDescription').value
+            };
+
+            // Basic validation
+            if (!experience.position || !experience.company || !experience.start) {
+                alert('Posisi, Perusahaan, dan Tanggal Mulai harus diisi.');
+                return;
+            }
+
+            if (id === '') {
+                cvData.experiences.push(experience);
+            } else {
+                cvData.experiences[id] = experience;
+            }
+
+            hideExperienceModal();
+            saveData();
+            alert('Pengalaman kerja berhasil disimpan!');
+        }
+
+        function editExperience(index) {
+            showExperienceModal(index);
+        }
+
+        function deleteExperience(index) {
+            if (confirm('Apakah Anda yakin ingin menghapus pengalaman ini?')) {
+                cvData.experiences.splice(index, 1);
+                saveData();
+                alert('Pengalaman kerja berhasil dihapus!');
+            }
+        }
+
+        // Education functions (similar to experience)
+        function showEducationModal(editIndex = null) {
+            const modal = document.getElementById('educationModal');
+            if (editIndex !== null && cvData.education[editIndex]) { // Check if index is valid
+                const edu = cvData.education[editIndex];
+                document.getElementById('eduId').value = editIndex;
+                document.getElementById('eduInstitution').value = edu.institution;
+                document.getElementById('eduDegree').value = edu.degree;
+                document.getElementById('eduStart').value = edu.start;
+                document.getElementById('eduEnd').value = edu.end || '';
+                document.getElementById('eduDescription').value = edu.description;
+            } else {
+                // Reset form for new entry
+                document.getElementById('eduId').value = '';
+                document.getElementById('eduInstitution').value = '';
+                document.getElementById('eduDegree').value = '';
+                document.getElementById('eduStart').value = '';
+                document.getElementById('eduEnd').value = '';
+                document.getElementById('eduDescription').value = '';
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex'); // Use flex to center it
+        }
+
+        function hideEducationModal() {
+            const modal = document.getElementById('educationModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveEducation() {
+            const id = document.getElementById('eduId').value;
+            const education = {
+                institution: document.getElementById('eduInstitution').value,
+                degree: document.getElementById('eduDegree').value,
+                start: document.getElementById('eduStart').value,
+                end: document.getElementById('eduEnd').value,
+                description: document.getElementById('eduDescription').value
+            };
+
+            // Basic validation
+            if (!education.institution || !education.degree || !education.start) {
+                alert('Institusi, Jurusan, dan Tanggal Mulai harus diisi.');
+                return;
+            }
+
+            if (id === '') {
+                cvData.education.push(education);
+            } else {
+                cvData.education[id] = education;
+            }
+
+            hideEducationModal();
+            saveData();
+            alert('Pendidikan berhasil disimpan!');
+        }
+
+        function editEducation(index) {
+            showEducationModal(index);
+        }
+
+        function deleteEducation(index) {
+            if (confirm('Apakah Anda yakin ingin menghapus pendidikan ini?')) {
+                cvData.education.splice(index, 1);
+                saveData();
+                alert('Pendidikan berhasil dihapus!');
+            }
+        }
+
+        // Initial load when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            // Initially show the main CV page
+            showMainPage();
+        });
+    </script>
+</body>
+</html>
